@@ -80,6 +80,22 @@ async function run() {
             const result = await allReviews.toArray();
             res.json(result);
         });
+        app.get("/users", async (req, res) => {
+            const allUsers = users.find({});
+            const result = await allUsers.toArray();
+            res.json(result);
+        });
+        app.get("/users/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = await users.findOne(query);
+            let isAdmin = false;
+            if (user?.role === "admin") {
+                isAdmin = true;
+            }
+            const result = { admin: isAdmin };
+            res.json(result);
+        });
 
         ///------------------///
 
@@ -88,6 +104,29 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = orders.deleteOne(query);
+            res.json(result);
+        });
+        app.delete("/products/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const product = await products.deleteOne(query);
+            res.json(product);
+        });
+
+        ///-------------PUT-----------///
+        app.put("/users/admin", async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const updateDoc = { $set: { role: "admin" } };
+            const result = await users.updateOne(filter, updateDoc);
+            res.json(result);
+        });
+        app.put("/users", async (req, res) => {
+            const user = req.body;
+            const filter = { email: user.email };
+            const options = { upsert: true };
+            const updateDoc = { $set: user };
+            const result = await users.updateOne(filter, updateDoc, options);
             res.json(result);
         });
     } finally {
@@ -105,9 +144,9 @@ app.listen(port, () => {
 
 /* 
 
-https://i.ibb.co/tPfzyDP/surveillence3.png
 
-https://i.ibb.co/SPR3q9s/professional2.png
+
+
 
 
 
